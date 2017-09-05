@@ -1,0 +1,3 @@
+Parameter			| Limit
+Declination (deg)	| -30
+Tracking R-band		| 12
