@@ -1,10 +1,11 @@
-Combiner	| Bandpass 	| Mag_Limit	| Diam_Lim_mas	| Img_Lim_mas
-Classic_H	| H			| 8			| 0.50			| N/A
-Classic_K	| K			| 8.5		| 0.68			| N/A
-CLIMB_H		| H			| 6.5		| 0.50			| N/A
-CLIMB_K		| K			| 7			| 0.68			| N/A
-JouFLU		| K			| 5			| 0.68			| N/A
-MIRC		| H			| 5			| 0.50			| 1.0
-PAVO		| R			| 7			| 0.21			| N/A
-VEGA		| R			| 6			| 0.21			| N/A
-VEGA_track	| K			| 6			| N/A			| N/A
+Combiner	| Bandpass 		| Typ_Mag_Lim	| Best_Mag_Lim	| Diam_Lim_mas	| Img_Lim_mas
+Classic_H	| H			| 6.5		| 8		| 0.50		| N/A
+Classic_K	| K			| 7		| 8.5		| 0.68		| N/A
+CLIMB_H		| H			| 5.5		| 6.5		| 0.50		| N/A
+CLIMB_K		| K			| 6		| 7		| 0.68		| N/A
+JouFLU		| K			| 4.5		| 5		| 0.68		| N/A
+MIRC		| H			| 4		| 6		| 0.50		| 1.0
+PAVO		| R			| 7		| 8		| 0.21		| N/A
+VEGA_hires	| R			| 4		| 5		| 0.21		| N/A
+VEGA_medres	| R			| 6.5		| 7.5		| 0.21		| N/A
+VEGA_track	| K			| 5		| 6		| N/A		| N/A

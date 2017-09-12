@@ -1,3 +1,3 @@
-Parameter			| Limit
-Declination (deg)	| -30
-Tracking R-band		| 12
+Parameter		| Typical Limit	| Best Limit
+Declination (deg)	| -10		| -30
+Tracking R-band		| 10		| 12
