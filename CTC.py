@@ -13,6 +13,9 @@ def main():
 	#diam = 0.6
 	
 	#star = 'kap And'
+	if len(sys.argv) < 2:
+		print 'Please input a target in the format "python CTC.py Target Name"'
+		return
 	star=''
 	for i in range(len(sys.argv)):
 		if i != 0:
@@ -20,9 +23,12 @@ def main():
 			if i != len(sys.argv)-1:
 				star+=' '
 	
-	v = Vizier(columns=['*','_r'])
-	table = v.query_object(star)['II/346/jsdc_v2']
-	#print table
+	try:
+		v = Vizier(columns=['*','_r'])
+		table = v.query_object(star)['II/346/jsdc_v2']
+	except:
+		print 'There was an error. Most often, this is due to the star not being found in the jsdc. It could also be because of a lack of internet connection.'
+		return
 	
 	rs = list(table['_r'])
 
@@ -36,18 +42,17 @@ def main():
 	Kmag = table['Kmag'][i]
 	diam = table['LDD'][i]
 	
-	
 	print 'Input Target Name: {}'.format(star)
 	print 'Found Target Name: {}'.format(table['Name'][i])
 	print 'Dec: {} deg, Rmag: {} mag, Hmag: {} mag, Kmag: {} mag, diam: {} mas'.format(dec,Rmag,Hmag,Kmag,diam) 
 	
 	
 	do_classic = True
-	do_climb = False
-	do_jouflu = False
-	do_mirc = False
-	do_pavo = False
-	do_vega = False
+	do_climb = True
+	do_jouflu = True
+	do_mirc = True
+	do_pavo = True
+	do_vega = True
 	
 	array_limit_file = 'CHARA_Global_Limits.txt'
 	combiner_limit_file = 'Beam_Combiner_Limits.txt'
@@ -58,7 +63,7 @@ def main():
 	if 'R' not in [dec_flag,track_flag]:
 		if dec_flag == 'Y' : print 'Target is low. It may be difficult to get good data.'
 		if track_flag == 'Y' : print 'Target is very faint to track on. It may be difficult to get good data.'
-		if 'Y' not in [dec_flag,track_flag] : print 'Target can be tracked!'
+		if 'Y' not in [dec_flag,track_flag] : print 'Target can be tracked by the telescopes!'
 		combiner_dict = get_combiner_limits(combiner_limit_file)
 		print '=========='
 		if do_classic:
@@ -68,12 +73,68 @@ def main():
 			if classic_Hmag_flag == 'R' : print 'Target too faint for Classic using H-band.'
 			if classic_Hmag_diam_flag == 'R' : print 'Target too small for Classic using H-band.'
 			if 'Y' not in [classic_Hmag_flag,classic_Hmag_diam_flag] and 'R' not in [classic_Hmag_flag,classic_Hmag_diam_flag] : print 'Target can be resolved with Classic using H-band!'
-			print '=========='
 			if classic_Kmag_flag == 'Y' : print 'Target is faint for Classic using K-band. It may be difficult to get good data.'
 			if classic_Kmag_diam_flag == 'Y' : print 'Target is small for Classic using K-band. It may be difficult to get good data.'
 			if classic_Kmag_flag == 'R' : print 'Target too faint for Classic using K-band.'
 			if classic_Kmag_diam_flag == 'R' : print 'Target too small for Classic using K-band.'
 			if 'Y' not in [classic_Kmag_flag,classic_Kmag_diam_flag] and 'R' not in [classic_Kmag_flag,classic_Kmag_diam_flag] : print 'Target can be resolved with Classic using K-band!'
+			print '=========='
+		if do_climb:
+			climb_Hmag_flag,climb_Hmag_diam_flag,climb_Kmag_flag,climb_Kmag_diam_flag = check_target_climb(diam,combiner_dict,Hmag,Kmag)
+			if climb_Hmag_flag == 'Y' : print 'Target is faint for CLIMB using H-band. It may be difficult to get good data.'
+			if climb_Hmag_diam_flag == 'Y' : print 'Target is small for CLIMB using H-band. It may be difficult to get good data.'
+			if climb_Hmag_flag == 'R' : print 'Target too faint for CLIMB using H-band.'
+			if climb_Hmag_diam_flag == 'R' : print 'Target too small for CLIMB using H-band.'
+			if 'Y' not in [climb_Hmag_flag,climb_Hmag_diam_flag] and 'R' not in [climb_Hmag_flag,climb_Hmag_diam_flag] : print 'Target can be resolved with CLIMB using H-band!'
+			if climb_Kmag_flag == 'Y' : print 'Target is faint for CLIMB using K-band. It may be difficult to get good data.'
+			if climb_Kmag_diam_flag == 'Y' : print 'Target is small for CLIMB using K-band. It may be difficult to get good data.'
+			if climb_Kmag_flag == 'R' : print 'Target too faint for CLIMB using K-band.'
+			if climb_Kmag_diam_flag == 'R' : print 'Target too small for CLIMB using K-band.'
+			if 'Y' not in [climb_Kmag_flag,climb_Kmag_diam_flag] and 'R' not in [climb_Kmag_flag,climb_Kmag_diam_flag] : print 'Target can be resolved with CLIMB using K-band!'
+			print '=========='
+		if do_jouflu:
+			jouflu_flag,jouflu_diam_flag = check_target_jouflu(diam,combiner_dict,Kmag)
+			if jouflu_flag == 'Y' : print 'Target is faint for JouFLU. It may be difficult to get good data.'
+			if jouflu_diam_flag == 'Y' : print 'Target is small for JouFLU. It may be difficult to get good data.'
+			if jouflu_flag == 'R' : print 'Target too faint for JouFLU.'
+			if jouflu_diam_flag == 'R' : print 'Target too small for JouFLU.'
+			if 'Y' not in [jouflu_flag,jouflu_diam_flag] and 'R' not in [jouflu_flag,jouflu_diam_flag] : print 'Target can be resolved with JouFLU!'
+			print '=========='
+		if do_mirc:
+			mirc_flag,mirc_diam_flag,mirc_img_flag = check_target_mirc(diam,combiner_dict,Hmag)
+			if mirc_flag == 'Y' : print 'Target is faint for MIRC. It may be difficult to get good data.'
+			if mirc_diam_flag == 'Y' : print 'Target is small for MIRC. It may be difficult to get good data.'
+			if mirc_img_flag == 'Y' : print 'Target is small for MIRC imaging. It may be difficult to get a good image.'
+			if mirc_flag == 'R' : print 'Target too faint for MIRC.'
+			if mirc_diam_flag == 'R' : print 'Target too small for MIRC.'
+			if mirc_img_flag == 'R' : print 'Target too small for MIRC imaging.'
+			if 'Y' not in [mirc_flag,mirc_diam_flag] and 'R' not in [mirc_flag,mirc_diam_flag]:
+				if mirc_img_flag != 'Y' and mirc_img_flag != 'R':
+					print 'Target can be resolved and imaged with MIRC!'
+				else:
+					print 'Target can be resolved, but not imaged with MIRC'
+			print '=========='
+		if do_vega:
+			vega_hires_flag,vega_medres_flag,vega_diam_flag = check_target_vega(diam,combiner_dict,Rmag,Kmag)
+			if vega_hires_flag == 'Y' : print 'Target is faint for VEGA in high resolution mode. It may be difficult to get good data.'
+			if vega_medres_flag == 'Y' : print 'Target is faint for VEGA in medium resolution mode. It may be difficult to get good data.'
+			if vega_diam_flag == 'Y' : print 'Target is small for VEGA. It may be difficult to get good data.'
+			if vega_hires_flag == 'R' : print 'Target too faint for VEGA in high resolution mode.'
+			if vega_medres_flag == 'R' : print 'Target too faint for VEGA in medium resolution mode.'
+			if vega_diam_flag == 'R' : print 'Target too small for VEGA.'
+			if 'Y' not in [vega_hires_flag,vega_medres_flag,vega_diam_flag] and 'R' not in [vega_hires_flag,vega_medres_flag,vega_diam_flag]:
+				print 'Target can be resolved with VEGA in all modes!'
+			elif 'Y' not in [vega_medres_flag,vega_diam_flag] and 'R' not in [vega_medres_flag,vega_diam_flag]:
+				print 'Target can be resolved with VEGA in medium resolution mode.'
+			print '=========='
+		if do_pavo:
+			pavo_flag,pavo_diam_flag = check_target_pavo(diam,combiner_dict,Rmag)
+			if pavo_flag == 'Y' : print 'Target is faint for PAVO. It may be difficult to get good data.'
+			if pavo_diam_flag == 'Y' : print 'Target is small for PAVO. It may be difficult to get good data.'
+			if pavo_flag == 'R' : print 'Target too faint for PAVO.'
+			if pavo_diam_flag == 'R' : print 'Target too small for PAVO.'
+			if 'Y' not in [pavo_flag,pavo_diam_flag] and 'R' not in [pavo_flag,pavo_diam_flag] : print 'Target can be resolved with PAVO!'
+			print '=========='
 	else:
 		if dec_flag == 'R' : print 'Target is too low.'
 		if track_flag == 'R' : print 'Target is too faint to track on.'
@@ -196,6 +257,192 @@ def check_target_classic(diam,combiner_dict,Hmag=100.,Kmag=100.):
 		classic_Kmag_flag = ''
 		classic_Kmag_diam_flag = ''
 	return classic_Hmag_flag,classic_Hmag_diam_flag,classic_Kmag_flag,classic_Kmag_diam_flag
+
+def check_target_climb(diam,combiner_dict,Hmag=100.,Kmag=100.):
+	if Hmag != 100.:
+		climb_Hmag_typ_lim = combiner_dict['CLIMB_H'][1]
+		climb_Hmag_best_lim = combiner_dict['CLIMB_H'][2]
+		
+		if Hmag < climb_Hmag_typ_lim:
+			climb_Hmag_flag = 'G'
+		elif Hmag < climb_Hmag_best_lim:
+			climb_Hmag_flag = 'Y'
+		else:
+			climb_Hmag_flag = 'R'
+			
+		climb_Hmag_diam_lim = combiner_dict['CLIMB_H'][3]
+		
+		if diam > climb_Hmag_diam_lim+0.1:
+			climb_Hmag_diam_flag = 'G'
+		elif diam > climb_Hmag_diam_lim:
+			climb_Hmag_diam_flag = 'Y'
+		else:
+			climb_Hmag_diam_flag = 'R'
+	else:
+		climb_Hmag_flag = ''
+		climb_Hmag_diam_flag = ''
+		
+	if Kmag != 100.:
+		climb_Kmag_typ_lim = combiner_dict['CLIMB_K'][1]
+		climb_Kmag_best_lim = combiner_dict['CLIMB_K'][2]
+		
+		if Kmag < climb_Kmag_typ_lim:
+			climb_Kmag_flag = 'G'
+		elif Kmag < climb_Kmag_best_lim:
+			climb_Kmag_flag = 'Y'
+		else:
+			climb_Kmag_flag = 'R'
+			
+		climb_Kmag_diam_lim = combiner_dict['CLIMB_K'][3]
+		
+		if diam > climb_Kmag_diam_lim+0.1:
+			climb_Kmag_diam_flag = 'G'
+		elif diam > climb_Kmag_diam_lim:
+			climb_Kmag_diam_flag = 'Y'
+		else:
+			climb_Kmag_diam_flag = 'R'
+	else:
+		climb_Kmag_flag = ''
+		climb_Kmag_diam_flag = ''
+	return climb_Hmag_flag,climb_Hmag_diam_flag,climb_Kmag_flag,climb_Kmag_diam_flag
+
+def check_target_jouflu(diam,combiner_dict,Kmag=100.):		
+	if Kmag != 100.:
+		jouflu_typ_lim = combiner_dict['JouFLU'][1]
+		jouflu_best_lim = combiner_dict['JouFLU'][2]
+		
+		if Kmag < jouflu_typ_lim:
+			jouflu_flag = 'G'
+		elif Kmag < jouflu_best_lim:
+			jouflu_flag = 'Y'
+		else:
+			jouflu_flag = 'R'
+			
+		jouflu_diam_lim = combiner_dict['JouFLU'][3]
+		
+		if diam > jouflu_diam_lim+0.1:
+			jouflu_diam_flag = 'G'
+		elif diam > jouflu_diam_lim:
+			jouflu_diam_flag = 'Y'
+		else:
+			jouflu_diam_flag = 'R'
+	else:
+		jouflu_flag = ''
+		jouflu_diam_flag = ''
+	return jouflu_flag,jouflu_diam_flag
+
+def check_target_mirc(diam,combiner_dict,Hmag=100.):		
+	if Hmag != 100.:
+		mirc_typ_lim = combiner_dict['MIRC'][1]
+		mirc_best_lim = combiner_dict['MIRC'][2]
+		
+		if Hmag < mirc_typ_lim:
+			mirc_flag = 'G'
+		elif Hmag < mirc_best_lim:
+			mirc_flag = 'Y'
+		else:
+			mirc_flag = 'R'
+			
+		mirc_diam_lim = combiner_dict['MIRC'][3]
+		
+		if diam > mirc_diam_lim+0.1:
+			mirc_diam_flag = 'G'
+		elif diam > mirc_diam_lim:
+			mirc_diam_flag = 'Y'
+		else:
+			mirc_diam_flag = 'R'
+			
+		mirc_img_lim = combiner_dict['MIRC'][4]
+		
+		if diam > mirc_img_lim+0.1:
+			mirc_img_flag = 'G'
+		elif diam > mirc_img_lim:
+			mirc_img_flag = 'Y'
+		else:
+			mirc_img_flag = 'R'
+	else:
+		mirc_flag = ''
+		mirc_diam_flag = ''
+		mirc_img_flag = ''
+	return mirc_flag,mirc_diam_flag,mirc_img_flag
+
+def check_target_vega(diam,combiner_dict,Rmag=100.,Kmag=100.):
+	vega_track_typ_lim = combiner_dict['VEGA_track'][1]
+	vega_track_best_lim = combiner_dict['VEGA_track'][2]
+	
+	if Kmag < vega_track_typ_lim:
+		vega_track_flag = 'G'
+	elif Kmag < vega_track_best_lim:
+		vega_track_flag = 'Y'
+	else:
+		vega_track_flag = 'R'
+	
+	if vega_track_flag == 'R':
+		print 'Target is too faint to track VEGA fringes.'
+	else:
+		if vega_track_flag == 'Y':
+			print 'Target is faint to track VEGA fringes on. It may be difficult to get good data.'
+		if Rmag != 100.:
+			vega_hires_typ_lim = combiner_dict['VEGA_hires'][1]
+			vega_hires_best_lim = combiner_dict['VEGA_hires'][2]
+			
+			if Rmag < vega_hires_typ_lim:
+				vega_hires_flag = 'G'
+			elif Rmag < vega_hires_best_lim:
+				vega_hires_flag = 'Y'
+			else:
+				vega_hires_flag = 'R'
+			
+			vega_medres_typ_lim = combiner_dict['VEGA_medres'][1]
+			vega_medres_best_lim = combiner_dict['VEGA_medres'][2]
+			
+			if Rmag < vega_medres_typ_lim:
+				vega_medres_flag = 'G'
+			elif Rmag < vega_medres_best_lim:
+				vega_medres_flag = 'Y'
+			else:
+				vega_medres_flag = 'R'
+				
+			vega_diam_lim = combiner_dict['VEGA_hires'][3]
+			
+			if diam > vega_diam_lim+0.1:
+				vega_diam_flag = 'G'
+			elif diam > vega_diam_lim:
+				vega_diam_flag = 'Y'
+			else:
+				vega_diam_flag = 'R'
+		else:
+			vega_hires_flag = ''
+			vega_medres_flag = ''
+			vega_diam_flag = ''
+		
+	return vega_hires_flag,vega_medres_flag,vega_diam_flag
+
+def check_target_pavo(diam,combiner_dict,Rmag=100.):
+	if Rmag != 100.:
+		pavo_typ_lim = combiner_dict['PAVO'][1]
+		pavo_best_lim = combiner_dict['PAVO'][2]
+		
+		if Rmag < pavo_typ_lim:
+			pavo_flag = 'G'
+		elif Rmag < pavo_best_lim:
+			pavo_flag = 'Y'
+		else:
+			pavo_flag = 'R'
+			
+		pavo_diam_lim = combiner_dict['PAVO'][3]
+		
+		if diam > pavo_diam_lim+0.1:
+			pavo_diam_flag = 'G'
+		elif diam > pavo_diam_lim:
+			pavo_diam_flag = 'Y'
+		else:
+			pavo_diam_flag = 'R'
+	else:
+		pavo_flag = ''
+		pavo_diam_flag = ''
+		
+	return pavo_flag,pavo_diam_flag
 
 def check_target_old(dec,Rmag,Hmag,Kmag,diam,dec_lim,Rmag_lim,combiner_dict):
 	if dec > dec_lim+20.:
