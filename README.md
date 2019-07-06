@@ -11,3 +11,4 @@ The following target parameters are compared to the Array's limits:
 * R-, J-, H-, and/or K-band magnitude (for science)
 * Angular Diameter
 
+Project began Sep 2017
